@@ -90,7 +90,7 @@ void cg::Game::loop() {
                 case KEY_DC:
                 case 127:
                 case '\b':
-                    input.pop_back();
+                    if (input.size() > 0) input.pop_back();
                     break;
                 case '\n':
                 case '\r':
