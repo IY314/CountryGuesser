@@ -5,6 +5,7 @@
 #include "game.hh"
 
 cg::Game::Game() {
+    // Init ncurses
     initscr();
     raw();
     noecho();
@@ -14,11 +15,12 @@ cg::Game::Game() {
 
     if (has_colors()) {
         start_color();
+        use_default_colors();
 
-        init_pair(10, COLOR_CYAN, COLOR_BLACK);
-        init_pair(20, COLOR_GREEN, COLOR_BLACK);
-        init_pair(30, COLOR_BLACK, COLOR_WHITE);
-        init_pair(40, COLOR_RED, COLOR_BLACK);
+        init_pair(BAR, COLOR_BLACK, COLOR_WHITE);
+        init_pair(PERCENT, COLOR_CYAN, -1);
+        init_pair(NUMBER, COLOR_GREEN, -1);
+        init_pair(RECENT, COLOR_RED, -1);
 
         hasColor = true;
     } else {
@@ -41,39 +43,49 @@ void cg::Game::loop() {
     bool running = true;
     while (running) {
         clear();
+
         // Progress bar
         long double progress = guessed.size() / 195.0;
         unsigned long progressBarFilled = ceil(progress * progressBarWidth);
         unsigned short progressPercent = ceil(progress * 100);
-        if (hasColor) attron(COLOR_PAIR(30));
+        if (hasColor) attron(COLOR_PAIR(BAR));
         for (unsigned long i = 1; i <= progressBarFilled; ++i) {
             mvaddch(0, i, '=');
         }
         if (hasColor) {
-            attroff(COLOR_PAIR(30));
-            attron(COLOR_PAIR(10));
+            attroff(COLOR_PAIR(BAR));
+            attron(COLOR_PAIR(PERCENT));
         }
+
+        // Percentage
         mvaddstr(0, COLS - 14, std::to_string(progressPercent).c_str());
         addch('%');
         if (hasColor) {
-            attroff(COLOR_PAIR(10));
-            attron(COLOR_PAIR(20));
+            attroff(COLOR_PAIR(PERCENT));
+            attron(COLOR_PAIR(NUMBER));
         }
+
+        // Number
         mvaddstr(0, COLS - 8, std::to_string(guessed.size()).c_str());
         addstr("/195");
-        if (hasColor) attroff(COLOR_PAIR(20));
+        if (hasColor) attroff(COLOR_PAIR(NUMBER));
 
-        if (hasColor) attron(COLOR_PAIR(40));
+        // Recent guesses
+        if (hasColor) attron(COLOR_PAIR(RECENT));
         move(LINES / 4, 0);
         refresh();
         if (guessed.size() >= 5) {
-            for (unsigned long i = guessed.size() - 5; i < guessed.size();
-                 ++i) {
-                mvaddstr(LINES / 4 + guessed.size() - i, 0,
-                         countries.at(guessed.at(i)).at(0).c_str());
+            for (auto i = guessed.end() - 5; i != guessed.end(); ++i) {
+                mvaddstr(LINES / 4 + guessed.end() - i, 0,
+                         countries.at(*i).at(0).c_str());
+            }
+        } else {
+            for (auto i = guessed.begin(); i != guessed.end(); ++i) {
+                mvaddstr(LINES / 4 + guessed.end() - i, 0,
+                         countries.at(*i).at(0).c_str());
             }
         }
-        if (hasColor) attroff(COLOR_PAIR(40));
+        if (hasColor) attroff(COLOR_PAIR(RECENT));
 
         // Get input
         mvaddstr(LINES / 2, 0, "Enter a country: ");
@@ -81,32 +93,45 @@ void cg::Game::loop() {
         std::string input;
         int ch, y, x;
         while (typing) {
+            // Clear displayed input and replace it with stored string
             getyx(stdscr, y, x);
             clrtoeol();
             move(y, x);
             addstr(input.c_str());
+
             switch (ch = getch()) {
+                // Delete last character from input
                 case KEY_BACKSPACE:
                 case KEY_DC:
                 case 127:
                 case '\b':
                     if (input.size() > 0) input.pop_back();
                     break;
+
+                // Submit input
                 case '\n':
                 case '\r':
                     typing = false;
                     break;
+
+                // Quit game
                 case '\e':
                     typing = false;
                     running = false;
                     loseScreen();
                     break;
+
+                // Add to input
                 default:
                     input.push_back(ch);
                     break;
             }
+
+            // Move cursor to space immediately after "Enter a country: "
             move(y, 17);
         }
+
+        // Check validity of guess
         if (running && !processGuess(input)) {
             loseScreen();
             running = false;
@@ -125,8 +150,12 @@ void cg::Game::loseScreen() {
 bool cg::Game::processGuess(const std::string& guess) {
     bool foundCountry = false;
 
+    // Iterate through all countries
     for (auto i = countries.begin(); i != countries.end(); ++i) {
+        // Some countries have multiple names, so each country must also be
+        // iterated through
         for (auto ci = (*i).begin(); ci != (*i).end(); ++ci) {
+            // Case-insensitive check of guess and country name
             if (std::equal((*ci).begin(), (*ci).end(), guess.begin(),
                            guess.end(), [](char a, char b) {
                                return std::tolower(a) == std::tolower(b);

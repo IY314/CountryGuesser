@@ -6,6 +6,11 @@
 
 #define COUNTRIES_PATH "countries.csv"
 
+#define BAR 0
+#define PERCENT 1
+#define NUMBER 2
+#define RECENT 3
+
 namespace cg {
 class Game {
     bool hasColor;
