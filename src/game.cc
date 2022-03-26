@@ -18,6 +18,7 @@ cg::Game::Game() {
         init_pair(10, COLOR_CYAN, COLOR_BLACK);
         init_pair(20, COLOR_GREEN, COLOR_BLACK);
         init_pair(30, COLOR_BLACK, COLOR_WHITE);
+        init_pair(40, COLOR_RED, COLOR_BLACK);
 
         hasColor = true;
     } else {
@@ -53,14 +54,26 @@ void cg::Game::loop() {
             attron(COLOR_PAIR(10));
         }
         mvaddstr(0, COLS - 14, std::to_string(progressPercent).c_str());
-        mvaddch(0, COLS - 11, '%');
+        addch('%');
         if (hasColor) {
             attroff(COLOR_PAIR(10));
             attron(COLOR_PAIR(20));
         }
         mvaddstr(0, COLS - 8, std::to_string(guessed.size()).c_str());
-        mvaddstr(0, COLS - 5, "/195");
+        addstr("/195");
         if (hasColor) attroff(COLOR_PAIR(20));
+
+        if (hasColor) attron(COLOR_PAIR(40));
+        move(LINES / 4, 0);
+        refresh();
+        if (guessed.size() >= 5) {
+            for (unsigned long i = guessed.size() - 5; i < guessed.size();
+                 ++i) {
+                mvaddstr(LINES / 4 + guessed.size() - i, 0,
+                         countries.at(guessed.at(i)).at(0).c_str());
+            }
+        }
+        if (hasColor) attroff(COLOR_PAIR(40));
 
         // Get input
         mvaddstr(LINES / 2, 0, "Enter a country: ");
