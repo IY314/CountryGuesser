@@ -113,21 +113,27 @@ bool cg::Game::processGuess(const std::string& guess) {
     bool foundCountry = false;
 
     for (auto i = countries.begin(); i != countries.end(); ++i) {
-        auto ci = std::find((*i).begin(), (*i).end(), guess);
-        if (ci != (*i).end()) {
-            unsigned long idx = i - countries.begin();
-            if (std::find(guessed.begin(), guessed.end(), idx) !=
-                guessed.end()) {
-                clear();
-                mvaddstr(LINES / 2, 0,
-                         "That country has already been guessed!");
-                getch();
-            } else {
-                guessed.push_back(idx);
+        for (auto ci = (*i).begin(); ci != (*i).end(); ++ci) {
+            if (std::equal((*ci).begin(), (*ci).end(), guess.begin(),
+                           guess.end(), [](char a, char b) {
+                               return std::tolower(a) == std::tolower(b);
+                           })) {
+                unsigned long idx = i - countries.begin();
+                if (std::find(guessed.begin(), guessed.end(), idx) !=
+                    guessed.end()) {
+                    clear();
+                    mvaddstr(LINES / 2, 0,
+                             "That country has already been guessed!");
+                    getch();
+                } else {
+                    guessed.push_back(idx);
+                }
+                foundCountry = true;
+                break;
             }
-            foundCountry = true;
-            break;
         }
+
+        if (foundCountry) break;
     }
 
     return foundCountry;
