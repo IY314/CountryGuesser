@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "game.hh"
+#include "util.hh"
 
 cg::Game::Game() {
     // Init ncurses
@@ -40,7 +41,7 @@ void cg::Game::getCountries() {
 void cg::Game::loop() {
     unsigned long progressBarWidth = COLS - 15;
 
-    bool running = true;
+    running = true;
     while (running) {
         clear();
 
@@ -131,23 +132,78 @@ void cg::Game::loop() {
             move(y, 17);
         }
 
-        // Check validity of guess
-        if (running && !processGuess(input)) {
-            loseScreen();
-            running = false;
-        }
+        processGuess(input);
     }
 }
 
-void cg::Game::loseScreen() {
+void cg::Game::loseScreen(const std::string& msg) const {
     clear();
-    mvaddstr(LINES / 2, 0, "You Lose!");
+    mvaddstr(LINES / 2, 0, msg.c_str());
     mvaddstr(LINES / 2 + 1, 0, "Final Score: ");
     addstr(std::to_string(guessed.size()).c_str());
     getch();
 }
 
-bool cg::Game::processGuess(const std::string& guess) {
+void cg::Game::processGuess(std::string& input) {
+    input = util::reduce(input);
+
+    // Various easter eggs :)
+    if (running &&
+        std::any_of(
+            easterEggs.begin(), easterEggs.end(), [input](std::string e) {
+                return std::equal(input.begin(), input.end(), e.begin(),
+                                  e.end(), [](char a, char b) {
+                                      return std::tolower(a) == std::tolower(b);
+                                  });
+            })) {
+        clear();
+        mvaddstr(LINES / 2, 0, "Nice one there, wisebutt.");
+        getch();
+    } else if (running &&
+               std::any_of(metaEasterEggs.begin(), metaEasterEggs.end(),
+                           [input](std::string e) {
+                               return std::equal(input.begin(), input.end(),
+                                                 e.begin(), e.end(),
+                                                 [](char a, char b) {
+                                                     return std::tolower(a) ==
+                                                            std::tolower(b);
+                                                 });
+                           })) {
+        for (auto it = metaEasterEggs.begin(); it != metaEasterEggs.end();
+             ++it) {
+            if (std::equal((*it).begin(), (*it).end(), input.begin(),
+                           input.end(), [](char a, char b) {
+                               return std::tolower(a) == std::tolower(b);
+                           })) {
+                if (it == metaEasterEggs.end() - 1) {
+                    loseScreen("I warned you, didn't I? YOU LOSE!");
+                    running = false;
+                } else {
+                    clear();
+                    mvaddstr(LINES / 2, 0,
+                             metaEasterEggs.at(it - metaEasterEggs.begin() + 1)
+                                 .c_str());
+                    getch();
+                }
+            }
+        }
+    } else if (running &&
+               std::equal(youLose.begin(), youLose.end(), input.begin(),
+                          input.end(), [](char a, char b) {
+                              return std::tolower(a) == std::tolower(b);
+                          })) {
+        loseScreen("No, YOU lose!");
+        running = false;
+    }
+
+    // Check validity of guess
+    else if (running && !validateGuess(input)) {
+        loseScreen();
+        running = false;
+    }
+}
+
+bool cg::Game::validateGuess(const std::string& guess) {
     bool foundCountry = false;
 
     // Iterate through all countries

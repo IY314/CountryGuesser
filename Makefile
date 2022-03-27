@@ -8,7 +8,7 @@ CXXFLAGS := -o bin/cg ${LFLAGS}
 
 all: link
 
-link: bin/main.o bin/csv.o bin/game.o
+link: bin/main.o bin/csv.o bin/game.o bin/util.o
 	${CXX} $^ ${CXXFLAGS}
 
 bin/%.o: src/%.cc bin
