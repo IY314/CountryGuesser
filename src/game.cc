@@ -6,7 +6,7 @@
 #include "guess.hh"
 #include "util.hh"
 
-cg::Game::Game() {
+cg::Game::Game(bool tutorial) {
     // Init ncurses
     initscr();
     raw();
@@ -28,6 +28,8 @@ cg::Game::Game() {
     } else {
         hasColor = false;
     }
+
+    if (tutorial) playTutorial();
 
     getCountries();
 

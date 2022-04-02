@@ -29,6 +29,8 @@ class Game {
 
     enum GuessStatus { gs_note, gs_lose, gs_ok, gs_null } status;
 
+    void playTutorial();
+
     void getCountries();
     void display();
     void getInput();
@@ -37,7 +39,7 @@ class Game {
     void loseScreen(const std::string& msg) const;
 
    public:
-    Game();
+    Game(bool tutorial);
     ~Game();
 
     void loop();
