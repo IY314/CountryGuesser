@@ -3,6 +3,7 @@
 #include <ncurses.h>
 
 #include "csv.hh"
+#include "guess.hh"
 
 #define COUNTRIES_PATH "countries.csv"
 
@@ -18,30 +19,22 @@ class Game {
     std::vector<unsigned long> guessed;
 
     bool running;
+    unsigned long progBarWidth, progBarFilled;
+    long double progress;
+    unsigned short progPercent;
 
-    const std::vector<std::string> easterEggs{
-        "That country has already been guessed!",
-        "A country",
-        "This country",
-        "That country",
-        "Enter a country:",
-        "Enter a country"};
+    std::string input, msg;
+    int ch;
+    unsigned long y, x, c;
 
-    const std::vector<std::string> metaEasterEggs{
-        "Nice one there, wisebutt.",
-        "You think you're funny?",
-        "Ok, this is getting out of hand.",
-        "Are you actually trying to play the game?",
-        "Ok, I'm warning you. DO NOT TYPE THIS IN.",
-        "Why'd you type it in?",
-        "I'm done with you. If you type this in, you die."};
-
-    const std::string youLose = "You Lose!";
+    enum GuessStatus { gs_note, gs_lose, gs_ok, gs_null } status;
 
     void getCountries();
-    void processGuess(std::string& input);
-    bool validateGuess(const std::string& guess);
-    void loseScreen(const std::string& msg = "You Lose!") const;
+    void display();
+    void getInput();
+    void processGuess();
+    void validateGuess(const guess::caseInsensitiveEquals& inputEquals);
+    void loseScreen(const std::string& msg) const;
 
    public:
     Game();
