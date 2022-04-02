@@ -46,44 +46,53 @@ void cg::Game::display() {
     progress = guessed.size() / 195.0;
     progBarFilled = ceil(progress * progBarWidth);
     progPercent = ceil(progress * 100);
-    if (hasColor) attron(COLOR_PAIR(BAR));
-    for (unsigned long i = 1; i <= progBarFilled; ++i) {
-        mvaddch(0, i, '=');
-    }
-    if (hasColor) {
-        attroff(COLOR_PAIR(BAR));
-        attron(COLOR_PAIR(PERCENT));
-    }
+
+    util__addcolor(
+        BAR,
+        {
+            for (unsigned long i = 1; i <= progBarFilled; ++i) {
+                mvaddch(0, i, '=');
+            }
+        },
+        hasColor);
 
     // Percentage
-    mvaddstr(0, COLS - 14, std::to_string(progPercent).c_str());
-    addch('%');
-    if (hasColor) {
-        attroff(COLOR_PAIR(PERCENT));
-        attron(COLOR_PAIR(NUMBER));
-    }
+    util__addcolor(
+        PERCENT,
+        {
+            mvaddstr(0, COLS - 14, std::to_string(progPercent).c_str());
+            addch('%');
+        },
+        hasColor);
 
     // Number
-    mvaddstr(0, COLS - 8, std::to_string(guessed.size()).c_str());
-    addstr("/195");
-    if (hasColor) attroff(COLOR_PAIR(NUMBER));
+    util__addcolor(
+        NUMBER,
+        {
+            mvaddstr(0, COLS - 8, std::to_string(guessed.size()).c_str());
+            addstr("/195");
+        },
+        hasColor);
 
     // Recent guesses
-    if (hasColor) attron(COLOR_PAIR(RECENT));
     move(LINES / 4, 0);
     refresh();
-    if (guessed.size() >= 5) {
-        for (auto i = guessed.end() - 5; i != guessed.end(); ++i) {
-            mvaddstr(LINES / 4 + guessed.end() - i, 0,
-                     countries.at(*i).at(0).c_str());
-        }
-    } else {
-        for (auto i = guessed.begin(); i != guessed.end(); ++i) {
-            mvaddstr(LINES / 4 + guessed.end() - i, 0,
-                     countries.at(*i).at(0).c_str());
-        }
-    }
-    if (hasColor) attroff(COLOR_PAIR(RECENT));
+    util__addcolor(
+        RECENT,
+        {
+            if (guessed.size() >= 5) {
+                for (auto i = guessed.end() - 5; i != guessed.end(); ++i) {
+                    mvaddstr(LINES / 4 + guessed.end() - i, 0,
+                             countries.at(*i).at(0).c_str());
+                }
+            } else {
+                for (auto i = guessed.begin(); i != guessed.end(); ++i) {
+                    mvaddstr(LINES / 4 + guessed.end() - i, 0,
+                             countries.at(*i).at(0).c_str());
+                }
+            }
+        },
+        hasColor);
 }
 
 void cg::Game::getInput() {
