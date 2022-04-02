@@ -6,7 +6,7 @@
 #include "guess.hh"
 #include "util.hh"
 
-cg::Game::Game(bool tutorial) {
+cg::Game::Game(bool tutorial, bool color) {
     // Init ncurses
     initscr();
     raw();
@@ -15,7 +15,9 @@ cg::Game::Game(bool tutorial) {
     keypad(stdscr, true);
     refresh();
 
-    if (has_colors()) {
+    hasColor = color && has_colors();
+
+    if (hasColor) {
         start_color();
         use_default_colors();
 
@@ -23,10 +25,6 @@ cg::Game::Game(bool tutorial) {
         init_pair(PERCENT, COLOR_CYAN, -1);
         init_pair(NUMBER, COLOR_GREEN, -1);
         init_pair(RECENT, COLOR_RED, -1);
-
-        hasColor = true;
-    } else {
-        hasColor = false;
     }
 
     progBarWidth = COLS - 15;

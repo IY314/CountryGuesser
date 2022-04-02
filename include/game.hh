@@ -40,7 +40,7 @@ class Game {
     void validateGuess(const caseInsensitiveEquals& inputEquals);
 
    public:
-    Game(bool tutorial);
+    Game(bool tutorial, bool color);
     ~Game();
 
     void loop();
