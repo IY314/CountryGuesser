@@ -29,14 +29,63 @@ cg::Game::Game(bool tutorial) {
         hasColor = false;
     }
 
+    progBarWidth = COLS - 15;
+
     if (tutorial) playTutorial();
 
     getCountries();
-
-    progBarWidth = COLS - 15;
 }
 
 cg::Game::~Game() { endwin(); }
+
+void cg::Game::popup(const std::string& text, bool cls) const {
+    if (cls) clear();
+    mvaddstr(LINES / 2, 0, text.c_str());
+    if (getch() == '\e') {
+        this->~Game();
+        std::exit(0);
+    }
+}
+
+void cg::Game::showDisplay(unsigned long start, unsigned long end,
+                           const std::string& text) {
+    clear();
+    display();
+    mvaddch(0, start, '|');
+    mvaddch(1, start, '+');
+    for (unsigned long i = start + 1; i < end; ++i) {
+        mvaddch(1, i, '-');
+    }
+    mvaddch(0, end, '|');
+    mvaddch(1, end, '+');
+    popup(text, false);
+}
+
+void cg::Game::playTutorial() {
+    popup(
+        "Welcome to CountryGuesser! Press any key to continue, or escape to "
+        "quit.");
+    popup(
+        "The objective of this game is to guess all 195 countries of the "
+        "world.");
+    popup("If you do not enter a valid country, you lose.");
+    popup(
+        "Don't worry though. I have been built to be lenient with your "
+        "answer.");
+    popup(
+        "For example, if you type in 'america' instead of 'America,' it still "
+        "counts...");
+    popup(
+        "or if you type in 'St. Patrick's Day' instead of 'Saint Patrick's "
+        "Day.'");
+    popup("You only need to use ASCII letters; there will not be diacritics.");
+    popup("However, I suppose I should show you around...");
+    showDisplay(0, progBarWidth - 1, "This is the progress bar.");
+    showDisplay(progBarWidth, COLS - 10, "This is the percentage.");
+    showDisplay(COLS - 9, COLS - 1,
+                "And this is the number of countries you have guessed.");
+    popup("Good luck!");
+}
 
 void cg::Game::getCountries() {
     std::ifstream is(COUNTRIES_PATH);
@@ -52,9 +101,8 @@ void cg::Game::display() {
     util__addcolor(
         BAR,
         {
-            for (unsigned long i = 1; i <= progBarFilled; ++i) {
+            for (unsigned long i = 1; i <= progBarFilled; ++i)
                 mvaddch(0, i, '=');
-            }
         },
         hasColor);
 
@@ -82,17 +130,14 @@ void cg::Game::display() {
     util__addcolor(
         RECENT,
         {
-            if (guessed.size() >= 5) {
-                for (auto i = guessed.end() - 5; i != guessed.end(); ++i) {
+            if (guessed.size() >= 5)
+                for (auto i = guessed.end() - 5; i != guessed.end(); ++i)
                     mvaddstr(LINES / 4 + guessed.end() - i, 0,
                              countries.at(*i).at(0).c_str());
-                }
-            } else {
-                for (auto i = guessed.begin(); i != guessed.end(); ++i) {
+            else
+                for (auto i = guessed.begin(); i != guessed.end(); ++i)
                     mvaddstr(LINES / 4 + guessed.end() - i, 0,
                              countries.at(*i).at(0).c_str());
-                }
-            }
         },
         hasColor);
 }
@@ -163,6 +208,7 @@ void cg::Game::loop() {
         getInput();
 
         if (running) {
+            if (util::reduce(input) == "") continue;
             cg::guess::replaceAll(input);
             processGuess();
             switch (status) {
@@ -177,8 +223,6 @@ void cg::Game::loop() {
                     break;
                 case gs_ok:
                     guessed.push_back(std::stoul(msg));
-                    break;
-                default:
                     break;
             }
         }

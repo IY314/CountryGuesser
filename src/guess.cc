@@ -29,6 +29,7 @@ void cg::guess::replaceAmpersand(std::string& src) {
 }
 
 void cg::guess::replaceSaint(std::string& src) {
+    if (src.size() < 2) return;
     const cg::guess::caseInsensitiveEquals isSt("st");
     size_t i = 0;
     bool inserted = false;
@@ -47,12 +48,9 @@ void cg::guess::replaceSaint(std::string& src) {
 
 void cg::Game::processGuess() {
     // Various easter eggs :)
-    cg::guess::caseInsensitiveEquals inputEquals(util::reduce(input));
-    if (inputEquals("")) {
-        status = gs_null;
-        return;
-    } else if (std::any_of(cg::guess::easterEggs.begin(),
-                           cg::guess::easterEggs.end(), inputEquals)) {
+    cg::guess::caseInsensitiveEquals inputEquals(input);
+    if (std::any_of(cg::guess::easterEggs.begin(), cg::guess::easterEggs.end(),
+                    inputEquals)) {
         msg = "Nice one there, wisebutt.";
         status = gs_note;
     } else if (std::any_of(cg::guess::metaEasterEggs.begin(),

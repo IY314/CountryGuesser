@@ -27,8 +27,12 @@ class Game {
     int ch;
     unsigned long y, x, c;
 
-    enum GuessStatus { gs_note, gs_lose, gs_ok, gs_null } status;
+    enum GuessStatus { gs_note, gs_lose, gs_ok } status;
 
+    void popup(const std::string& text, bool cls = true) const;
+
+    void showDisplay(unsigned long start, unsigned long end,
+                     const std::string& text);
     void playTutorial();
 
     void getCountries();
@@ -36,7 +40,7 @@ class Game {
     void getInput();
     void processGuess();
     void validateGuess(const guess::caseInsensitiveEquals& inputEquals);
-    void loseScreen(const std::string& msg) const;
+    void loseScreen(const std::string& text) const;
 
    public:
     Game(bool tutorial);
