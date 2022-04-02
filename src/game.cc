@@ -161,6 +161,7 @@ void cg::Game::loop() {
         getInput();
 
         if (running) {
+            cg::guess::replaceAll(input);
             processGuess();
             switch (status) {
                 case gs_note:

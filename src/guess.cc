@@ -11,13 +11,29 @@ bool cg::guess::caseInsensitiveEquals::operator()(const std::string& b) const {
         [](char x, char y) { return std::tolower(x) == std::tolower(y); });
 }
 
-void cg::guess::replaceSaintAbbrev(std::string& src) {
-    const std::string st = "st";
-    cg::guess::caseInsensitiveEquals isSt(st);
+void cg::guess::replaceAll(std::string& src) {
+    cg::guess::replaceAmpersand(src);
+    cg::guess::replaceSaint(src);
+}
+
+void cg::guess::replaceAmpersand(std::string& src) {
+    size_t i = 0;
+    while (i < (src.size() - 1)) {
+        if (src.at(i) == '&') {
+            src.insert(i + 1, "and");
+            src.erase(i, 1);
+            i += 3;
+        } else
+            ++i;
+    }
+}
+
+void cg::guess::replaceSaint(std::string& src) {
+    const cg::guess::caseInsensitiveEquals isSt("st");
     size_t i = 0;
     bool inserted = false;
-    while (i < (src.size() - st.size())) {
-        if (isSt(src.substr(i, st.size()))) {
+    while (i < (src.size() - 2)) {
+        if (isSt(src.substr(i, 2))) {
             src.insert(i + 1, "ain");
             inserted = true;
             i += 5;

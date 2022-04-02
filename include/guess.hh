@@ -20,8 +20,6 @@ const std::vector<std::string> metaEasterEggs{
     "Why'd you type it in?",
     "I'm done with you. If you type this in, you die."};
 
-const std::string youLose = "You Lose!";
-
 // case insensitive equality functor
 class caseInsensitiveEquals {
     std::string a;
@@ -32,5 +30,9 @@ class caseInsensitiveEquals {
     bool operator()(const std::string& b) const;
 };
 
-void replaceSaintAbbrev(std::string& src);
+void replaceAll(std::string& src);
+
+void replaceAmpersand(std::string& src);
+
+void replaceSaint(std::string& src);
 }  // namespace cg::guess
