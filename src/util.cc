@@ -13,7 +13,7 @@ std::string util::trim(const std::string& str, const std::string& whitespace) {
 std::string util::reduce(const std::string& str, const std::string& fill,
                          const std::string& whitespace) {
     // trim first
-    auto result = util::trim(str, whitespace);
+    auto result = trim(str, whitespace);
 
     // replace sub ranges
     auto beginSpace = result.find_first_of(whitespace);

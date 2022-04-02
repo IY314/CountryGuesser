@@ -30,6 +30,7 @@ cg::Game::Game(bool tutorial) {
     }
 
     progBarWidth = COLS - 15;
+    mid = LINES / 2;
 
     if (tutorial) playTutorial();
 
@@ -40,7 +41,7 @@ cg::Game::~Game() { endwin(); }
 
 void cg::Game::popup(const std::string& text, bool cls) const {
     if (cls) clear();
-    mvaddstr(LINES / 2, 0, text.c_str());
+    mvaddstr(mid, 0, text.c_str());
     if (getch() == '\e') {
         this->~Game();
         std::exit(0);
@@ -143,17 +144,15 @@ void cg::Game::display() {
 }
 
 void cg::Game::getInput() {
-    input.clear();
-    c = 0;
-    mvaddstr(LINES / 2, 0, "Enter a country: ");
+    guess.clear();
+    cursor = 0;
+    mvaddstr(mid, 0, "Enter a country: ");
     bool typing = true;
     while (typing) {
-        // Clear displayed input and replace it with stored string
-        y = getcury(stdscr);
-        move(y, 17);
+        move(mid, 17);
         clrtoeol();
-        addstr(input.c_str());
-        move(y, c + 17);
+        addstr(guess.c_str());
+        move(mid, cursor + 17);
 
         switch (ch = getch()) {
             // Delete last character from input
@@ -161,9 +160,9 @@ void cg::Game::getInput() {
             case KEY_DC:
             case 127:
             case '\b':
-                if (c > 0) {
-                    input.erase(c - 1, 1);
-                    --c;
+                if (cursor > 0) {
+                    guess.erase(cursor - 1, 1);
+                    --cursor;
                 }
                 break;
 
@@ -176,28 +175,27 @@ void cg::Game::getInput() {
             // Quit game
             case '\e':
                 typing = false;
-                running = false;
-                loseScreen("");
+                lose("");
                 break;
 
             // Move
             case KEY_LEFT:
-                if (c > 0) --c;
+                if (cursor > 0) --cursor;
                 break;
             case KEY_RIGHT:
-                if (c < input.size()) ++c;
+                if (cursor < guess.size()) ++cursor;
                 break;
 
             // Add to input
             default:
-                input.insert(c, std::string(1, ch));
-                ++c;
+                guess.insert(cursor, std::string(1, ch));
+                ++cursor;
                 break;
         }
     }
 
     // Move cursor to space immediately after "Enter a country: "
-    move(y, 17);
+    move(mid, 17);
 }
 
 void cg::Game::loop() {
@@ -208,31 +206,18 @@ void cg::Game::loop() {
         getInput();
 
         if (running) {
-            if (util::reduce(input) == "") continue;
-            cg::guess::replaceAll(input);
+            if (util::reduce(guess) == "") continue;
+            replaceAll(guess);
             processGuess();
-            switch (status) {
-                case gs_note:
-                    clear();
-                    mvaddstr(LINES / 2, 0, msg.c_str());
-                    getch();
-                    break;
-                case gs_lose:
-                    loseScreen(msg);
-                    running = false;
-                    break;
-                case gs_ok:
-                    guessed.push_back(std::stoul(msg));
-                    break;
-            }
         }
     }
 }
 
-void cg::Game::loseScreen(const std::string& msg) const {
+void cg::Game::lose(const std::string& text) {
     clear();
-    mvaddstr(LINES / 2, 0, msg.c_str());
-    mvaddstr(LINES / 2 + 1, 0, "Final Score: ");
+    mvaddstr(mid, 0, text.c_str());
+    mvaddstr(mid + 1, 0, "Final Score: ");
     addstr(std::to_string(guessed.size()).c_str());
     getch();
+    running = false;
 }

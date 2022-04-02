@@ -19,17 +19,15 @@ class Game {
     std::vector<unsigned long> guessed;
 
     bool running;
-    unsigned long progBarWidth, progBarFilled;
+    unsigned long progBarWidth, progBarFilled, mid, cursor;
     long double progress;
     unsigned short progPercent;
 
-    std::string input, msg;
+    std::string guess;
     int ch;
-    unsigned long y, x, c;
-
-    enum GuessStatus { gs_note, gs_lose, gs_ok } status;
 
     void popup(const std::string& text, bool cls = true) const;
+    void lose(const std::string& text);
 
     void showDisplay(unsigned long start, unsigned long end,
                      const std::string& text);
@@ -39,8 +37,7 @@ class Game {
     void display();
     void getInput();
     void processGuess();
-    void validateGuess(const guess::caseInsensitiveEquals& inputEquals);
-    void loseScreen(const std::string& text) const;
+    void validateGuess(const caseInsensitiveEquals& inputEquals);
 
    public:
     Game(bool tutorial);

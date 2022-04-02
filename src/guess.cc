@@ -2,21 +2,20 @@
 #include "guess.hh"
 #include "util.hh"
 
-cg::guess::caseInsensitiveEquals::caseInsensitiveEquals(const std::string& a)
-    : a{a} {}
+cg::caseInsensitiveEquals::caseInsensitiveEquals(const std::string& a) : a{a} {}
 
-bool cg::guess::caseInsensitiveEquals::operator()(const std::string& b) const {
+bool cg::caseInsensitiveEquals::operator()(const std::string& b) const {
     return std::equal(
         a.begin(), a.end(), b.begin(), b.end(),
         [](char x, char y) { return std::tolower(x) == std::tolower(y); });
 }
 
-void cg::guess::replaceAll(std::string& src) {
-    cg::guess::replaceAmpersand(src);
-    cg::guess::replaceSaint(src);
+void cg::replaceAll(std::string& src) {
+    cg::replaceAmpersand(src);
+    cg::replaceSaint(src);
 }
 
-void cg::guess::replaceAmpersand(std::string& src) {
+void cg::replaceAmpersand(std::string& src) {
     size_t i = 0;
     while (i < (src.size() - 1)) {
         if (src.at(i) == '&') {
@@ -28,9 +27,9 @@ void cg::guess::replaceAmpersand(std::string& src) {
     }
 }
 
-void cg::guess::replaceSaint(std::string& src) {
+void cg::replaceSaint(std::string& src) {
     if (src.size() < 2) return;
-    const cg::guess::caseInsensitiveEquals isSt("st");
+    const cg::caseInsensitiveEquals isSt("st");
     size_t i = 0;
     bool inserted = false;
     while (i < (src.size() - 2)) {
@@ -48,35 +47,28 @@ void cg::guess::replaceSaint(std::string& src) {
 
 void cg::Game::processGuess() {
     // Various easter eggs :)
-    cg::guess::caseInsensitiveEquals inputEquals(input);
-    if (std::any_of(cg::guess::easterEggs.begin(), cg::guess::easterEggs.end(),
-                    inputEquals)) {
-        msg = "Nice one there, wisebutt.";
-        status = gs_note;
-    } else if (std::any_of(cg::guess::metaEasterEggs.begin(),
-                           cg::guess::metaEasterEggs.end(), inputEquals)) {
-        for (auto it = cg::guess::metaEasterEggs.begin();
-             it != cg::guess::metaEasterEggs.end(); ++it)
+    caseInsensitiveEquals inputEquals(guess);
+    if (std::any_of(easterEggs.begin(), easterEggs.end(), inputEquals)) {
+        popup("Nice one there, wisebutt.");
+    } else if (std::any_of(metaEasterEggs.begin(), metaEasterEggs.end(),
+                           inputEquals)) {
+        for (auto it = metaEasterEggs.begin(); it != metaEasterEggs.end(); ++it)
             if (inputEquals(*it)) {
-                if (it == cg::guess::metaEasterEggs.end() - 1) {
-                    msg = "I warned you, didn't I? YOU LOSE!";
-                    status = gs_lose;
+                if (it == metaEasterEggs.end() - 1) {
+                    lose("I warned you, didn't I? YOU LOSE!");
                 } else {
-                    msg = cg::guess::metaEasterEggs.at(
-                        it - cg::guess::metaEasterEggs.begin() + 1);
-                    status = gs_note;
+                    popup(metaEasterEggs.at(it - metaEasterEggs.begin() + 1));
                 }
             }
     } else if (inputEquals("You Lose!")) {
-        msg = "No, YOU lose!";
-        status = gs_lose;
+        lose("No, YOU lose!");
     }
 
     // Check validity of guess
     validateGuess(inputEquals);
 }
 
-void cg::Game::validateGuess(const guess::caseInsensitiveEquals& inputEquals) {
+void cg::Game::validateGuess(const caseInsensitiveEquals& inputEquals) {
     // Iterate through all countries
     for (auto i = countries.begin(); i != countries.end(); ++i) {
         // Some countries have multiple names, so each country must also be
@@ -87,17 +79,14 @@ void cg::Game::validateGuess(const guess::caseInsensitiveEquals& inputEquals) {
                 unsigned long idx = i - countries.begin();
                 if (std::find(guessed.begin(), guessed.end(), idx) !=
                     guessed.end()) {
-                    msg = "That country has already been guessed!";
-                    status = gs_note;
+                    popup("That country has already been guessed!");
                 } else {
-                    msg = std::to_string(idx);
-                    status = gs_ok;
+                    guessed.push_back(idx);
                 }
                 return;
             }
         }
     }
 
-    msg = "You Lose!";
-    status = gs_lose;
+    lose("You Lose!");
 }

@@ -2,7 +2,7 @@
 
 #include "csv.hh"
 
-namespace cg::guess {
+namespace cg {
 const std::vector<std::string> easterEggs{
     "That country has already been guessed!",
     "A country",
@@ -35,4 +35,4 @@ void replaceAll(std::string& src);
 void replaceAmpersand(std::string& src);
 
 void replaceSaint(std::string& src);
-}  // namespace cg::guess
+}  // namespace cg
