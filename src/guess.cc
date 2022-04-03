@@ -12,7 +12,7 @@ bool cg::Equals::operator()(const std::string& b) const {
 cg::Replacer::Replacer(const std::string& src) : src{src} {}
 
 cg::Replacer& cg::Replacer::replaceAll() {
-    return replaceAmpersand().replaceSaint();
+    return replaceAmpersand().replaceSaint().replaceCardinalAbbrev();
 }
 
 cg::Replacer& cg::Replacer::replaceAmpersand() {
@@ -22,7 +22,19 @@ cg::Replacer& cg::Replacer::replaceAmpersand() {
 
 cg::Replacer& cg::Replacer::replaceSaint() {
     src = std::regex_replace(
-        src, std::regex(R"(st\.?)", std::regex_constants::icase), "Saint");
+        src, std::regex(R"(^st\.?\s)", std::regex_constants::icase), "Saint ");
+    return *this;
+}
+
+cg::Replacer& cg::Replacer::replaceCardinalAbbrev() {
+    src = std::regex_replace(
+        src, std::regex(R"(^n\.?\s)", std::regex_constants::icase), "North ");
+    src = std::regex_replace(
+        src, std::regex(R"(^s\.?\s)", std::regex_constants::icase), "South ");
+    src = std::regex_replace(
+        src, std::regex(R"(^e\.?\s)", std::regex_constants::icase), "East ");
+    src = std::regex_replace(
+        src, std::regex(R"(^w\.?\s)", std::regex_constants::icase), "West ");
     return *this;
 }
 

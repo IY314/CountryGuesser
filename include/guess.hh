@@ -51,6 +51,9 @@ class Replacer {
     // Expand "St" and "St." into "Saint"
     Replacer& replaceSaint();
 
+    // Expand cardinal abbreviations
+    Replacer& replaceCardinalAbbrev();
+
     // Set dest to internal src
     Replacer& set(std::string& dest);
 };
