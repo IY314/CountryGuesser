@@ -5,8 +5,6 @@
 #include <vector>
 
 namespace csv {
-using CSVRow = std::vector<std::string>;
-using CSVOutput = std::vector<CSVRow>;
-
-CSVOutput readCSV(std::ifstream& is);
+// Read CSV from a file and output a vector
+std::vector<std::vector<std::string>> readCSV(std::ifstream& is);
 }  // namespace csv

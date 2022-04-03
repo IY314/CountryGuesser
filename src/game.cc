@@ -1,9 +1,9 @@
-#include <algorithm>
 #include <cmath>
 #include <sstream>
 
+#include <ncurses.h>
+
 #include "game.hh"
-#include "guess.hh"
 #include "util.hh"
 
 cg::Game::Game(bool tutorial, bool color) {
@@ -15,8 +15,8 @@ cg::Game::Game(bool tutorial, bool color) {
     keypad(stdscr, true);
     refresh();
 
+    // Init color if specified
     hasColor = color && has_colors();
-
     if (hasColor) {
         start_color();
         use_default_colors();
@@ -27,6 +27,7 @@ cg::Game::Game(bool tutorial, bool color) {
         init_pair(RECENT, COLOR_RED, -1);
     }
 
+    // Set display variables pertaining to dimension
     progBarWidth = COLS - 15;
     mid = LINES / 2;
 
@@ -35,15 +36,31 @@ cg::Game::Game(bool tutorial, bool color) {
     getCountries();
 }
 
-cg::Game::~Game() { endwin(); }
+cg::Game::~Game() {
+    // Stop ncurses
+    endwin();
+}
 
 void cg::Game::popup(const std::string& text, bool cls) const {
     if (cls) clear();
+
+    // Display message
     mvaddstr(mid, 0, text.c_str());
+
+    // Get key and detect for quit key (esc)
     if (getch() == '\e') {
         this->~Game();
         std::exit(0);
     }
+}
+
+void cg::Game::lose(const std::string& text) {
+    clear();
+    mvaddstr(mid, 0, text.c_str());
+    mvaddstr(mid + 1, 0, "Final Score: ");
+    addstr(std::to_string(guessed.size()).c_str());
+    getch();
+    running = false;
 }
 
 void cg::Game::showDisplay(unsigned long start, unsigned long end,
@@ -79,16 +96,20 @@ void cg::Game::playTutorial() {
         "Day.'");
     popup("You only need to use ASCII letters; there will not be diacritics.");
     popup("However, I suppose I should show you around...");
+
+    // Point to different parts of the display
     showDisplay(0, progBarWidth - 1, "This is the progress bar.");
     showDisplay(progBarWidth, COLS - 10, "This is the percentage.");
     showDisplay(COLS - 9, COLS - 1,
                 "And this is the number of countries you have guessed.");
+
     popup("Good luck!");
 }
 
 void cg::Game::getCountries() {
     std::ifstream is(COUNTRIES_PATH);
     countries = csv::readCSV(is);
+    is.close();
 }
 
 void cg::Game::display() {
@@ -129,11 +150,12 @@ void cg::Game::display() {
     util__addcolor(
         RECENT,
         {
-            if (guessed.size() >= 5)
+            if (guessed.size() >= 5)  // Display 5 most recent guesses
                 for (auto i = guessed.end() - 5; i != guessed.end(); ++i)
                     mvaddstr(LINES / 4 + guessed.end() - i, 0,
                              countries.at(*i).at(0).c_str());
-            else
+
+            else  // Display ALL guesses
                 for (auto i = guessed.begin(); i != guessed.end(); ++i)
                     mvaddstr(LINES / 4 + guessed.end() - i, 0,
                              countries.at(*i).at(0).c_str());
@@ -142,14 +164,27 @@ void cg::Game::display() {
 }
 
 void cg::Game::getInput() {
+    // Clear previous guess from variable
     guess.clear();
+
+    // Set cursor position
     cursor = 0;
+
+    // Prompt the player
     mvaddstr(mid, 0, "Enter a country: ");
+
+    // Detect for typing
     bool typing = true;
     while (typing) {
+        // Clear from after the prompt to end of line
         move(mid, 17);
         clrtoeol();
+
+        // Display current input (this and the clearing is required for good
+        // backspace implementation)
         addstr(guess.c_str());
+
+        // Move terminal cursor to stored position
         move(mid, cursor + 17);
 
         switch (ch = getch()) {
@@ -205,17 +240,9 @@ void cg::Game::loop() {
 
         if (running) {
             if (util::reduce(guess) == "") continue;
-            replaceAll(guess);
+            // Expand all abbreviations, etc
+            Replacer(guess).replaceAll().set(guess);
             processGuess();
         }
     }
-}
-
-void cg::Game::lose(const std::string& text) {
-    clear();
-    mvaddstr(mid, 0, text.c_str());
-    mvaddstr(mid + 1, 0, "Final Score: ");
-    addstr(std::to_string(guessed.size()).c_str());
-    getch();
-    running = false;
 }

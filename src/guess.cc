@@ -1,92 +1,94 @@
+#include <regex>
+
 #include "game.hh"
-#include "guess.hh"
 #include "util.hh"
 
-cg::caseInsensitiveEquals::caseInsensitiveEquals(const std::string& a) : a{a} {}
+cg::Equals::Equals(const std::string& a) : a{a} {}
 
-bool cg::caseInsensitiveEquals::operator()(const std::string& b) const {
-    return std::equal(
-        a.begin(), a.end(), b.begin(), b.end(),
-        [](char x, char y) { return std::tolower(x) == std::tolower(y); });
+bool cg::Equals::operator()(const std::string& b) const {
+    return util::levenshteinDist(a, b) <= 2;
 }
 
-void cg::replaceAll(std::string& src) {
-    cg::replaceAmpersand(src);
-    cg::replaceSaint(src);
+cg::Replacer::Replacer(const std::string& src) : src{src} {}
+
+cg::Replacer& cg::Replacer::replaceAll() {
+    return replaceAmpersand().replaceSaint();
 }
 
-void cg::replaceAmpersand(std::string& src) {
-    size_t i = 0;
-    while (i < (src.size() - 1)) {
-        if (src.at(i) == '&') {
-            src.insert(i + 1, "and");
-            src.erase(i, 1);
-            i += 3;
-        } else
-            ++i;
-    }
+cg::Replacer& cg::Replacer::replaceAmpersand() {
+    src = std::regex_replace(src, std::regex("&"), "and");
+    return *this;
 }
 
-void cg::replaceSaint(std::string& src) {
-    if (src.size() < 2) return;
-    const cg::caseInsensitiveEquals isSt("st");
-    size_t i = 0;
-    bool inserted = false;
-    while (i < (src.size() - 2)) {
-        if (isSt(src.substr(i, 2))) {
-            src.insert(i + 1, "ain");
-            inserted = true;
-            i += 5;
-        } else if (inserted && src.at(i) == '.') {
-            src.erase(i, 1);
-            inserted = false;
-        } else
-            ++i;
-    }
+cg::Replacer& cg::Replacer::replaceSaint() {
+    src = std::regex_replace(
+        src, std::regex(R"(st\.?)", std::regex_constants::icase), "Saint");
+    return *this;
+}
+
+cg::Replacer& cg::Replacer::set(std::string& dest) {
+    dest = src;
+    return *this;
 }
 
 void cg::Game::processGuess() {
     // Various easter eggs :)
-    caseInsensitiveEquals inputEquals(guess);
-    if (std::any_of(easterEggs.begin(), easterEggs.end(), inputEquals)) {
+    Equals inputEquals(guess);
+    if (std::any_of(easterEggs.begin(), easterEggs.end(), inputEquals))
         popup("Nice one there, wisebutt.");
-    } else if (std::any_of(metaEasterEggs.begin(), metaEasterEggs.end(),
-                           inputEquals)) {
+    else if (std::any_of(metaEasterEggs.begin(), metaEasterEggs.end(),
+                         inputEquals)) {
         for (auto it = metaEasterEggs.begin(); it != metaEasterEggs.end(); ++it)
             if (inputEquals(*it)) {
-                if (it == metaEasterEggs.end() - 1) {
+                if (it == metaEasterEggs.end() - 1)
                     lose("I warned you, didn't I? YOU LOSE!");
-                } else {
+                else
                     popup(metaEasterEggs.at(it - metaEasterEggs.begin() + 1));
-                }
             }
-    } else if (inputEquals("You Lose!")) {
+    } else if (inputEquals("You Lose!"))
         lose("No, YOU lose!");
-    }
 
     // Check validity of guess
-    validateGuess(inputEquals);
+    validateGuess();
 }
 
-void cg::Game::validateGuess(const caseInsensitiveEquals& inputEquals) {
+void cg::Game::validateGuess() {
+    size_t lowestDistance = 3;
+    size_t idx = 0;
     // Iterate through all countries
-    for (auto i = countries.begin(); i != countries.end(); ++i) {
+    for (auto i = countries.begin(); i != countries.end(); ++i)
         // Some countries have multiple names, so each country must also be
         // iterated through
         for (auto ci = (*i).begin(); ci != (*i).end(); ++ci) {
-            // Case-insensitive check of guess and country name
-            if (inputEquals(*ci)) {
-                unsigned long idx = i - countries.begin();
-                if (std::find(guessed.begin(), guessed.end(), idx) !=
-                    guessed.end()) {
-                    popup("That country has already been guessed!");
-                } else {
-                    guessed.push_back(idx);
+            // Fuzzy check of guess and country name
+            size_t d = util::levenshteinDist(guess, *ci);
+
+            // Check that the guess and country is closer than previous
+            if (d < lowestDistance) {
+                lowestDistance = d;
+                idx = i - countries.begin();
+                if (d == 0) {
+                    // There will only be one country with a distance of 0, so
+                    // return early
+                    if (std::find(guessed.begin(), guessed.end(), idx) !=
+                        guessed.end())
+                        popup("That country has already been guessed!");
+                    else
+                        guessed.push_back(idx);
+                    return;
                 }
-                return;
             }
         }
-    }
 
-    lose("You Lose!");
+    // 3 is the upper bound, meaning that if no countries were found that were
+    // closer than 3 edits, the guess is not valid
+    if (lowestDistance == 3)
+        lose("You Lose!");
+    else {
+        // Use closest country
+        if (std::find(guessed.begin(), guessed.end(), idx) != guessed.end())
+            popup("That country has already been guessed!");
+        else
+            guessed.push_back(idx);
+    }
 }

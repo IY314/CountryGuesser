@@ -3,6 +3,7 @@
 #include "csv.hh"
 
 namespace cg {
+// Easter egg values
 const std::vector<std::string> easterEggs{
     "That country has already been guessed!",
     "A country",
@@ -11,6 +12,7 @@ const std::vector<std::string> easterEggs{
     "Enter a country:",
     "Enter a country"};
 
+// Meta easter eggs, in increasing agitation
 const std::vector<std::string> metaEasterEggs{
     "Nice one there, wisebutt.",
     "You think you're funny?",
@@ -20,19 +22,36 @@ const std::vector<std::string> metaEasterEggs{
     "Why'd you type it in?",
     "I'm done with you. If you type this in, you die."};
 
-// case insensitive equality functor
-class caseInsensitiveEquals {
+// Equality functor
+class Equals {
     std::string a;
 
    public:
-    caseInsensitiveEquals(const std::string& a);
+    // Initialize a
+    Equals(const std::string& a);
 
+    // Compare
     bool operator()(const std::string& b) const;
 };
 
-void replaceAll(std::string& src);
+// String replacer
+class Replacer {
+   public:
+    std::string src;
 
-void replaceAmpersand(std::string& src);
+    // Init replacer
+    Replacer(const std::string& src);
 
-void replaceSaint(std::string& src);
+    // Replace all matches in a string
+    Replacer& replaceAll();
+
+    // Expand ampersands into "and"
+    Replacer& replaceAmpersand();
+
+    // Expand "St" and "St." into "Saint"
+    Replacer& replaceSaint();
+
+    // Set dest to internal src
+    Replacer& set(std::string& dest);
+};
 }  // namespace cg

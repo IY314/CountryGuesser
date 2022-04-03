@@ -3,9 +3,11 @@
 
 #include "game.hh"
 
+// Version numbers
 #define VMAJOR 1
 #define VMINOR 0
 
+// Options are processed twice (long and short), so this macro "reuses" the code
 #define optswitch                                               \
     case 't':                                                   \
         tutorial = true;                                        \
@@ -25,6 +27,8 @@ int main(int argc, char **argv) {
                                    {"nocolor", no_argument, 0, 'C'},
                                    {"version", no_argument, 0, 'v'}};
     int optidx, opt;
+
+    // Parse options
     while ((opt = getopt_long(argc, argv, "tCv", longOptions, &optidx)) != -1) {
         switch (opt) {
             case 0:
@@ -35,5 +39,7 @@ int main(int argc, char **argv) {
                 optswitch
         }
     }
+
+    // Start game
     cg::Game(tutorial, color).loop();
 }
