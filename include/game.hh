@@ -2,8 +2,6 @@
 
 #include "guess.hh"
 
-#define COUNTRIES_PATH "countries.csv"
-
 // ncurses color constants
 #define BAR 0
 #define PERCENT 1
@@ -12,6 +10,7 @@
 
 namespace cg {
 class Game {
+    std::string countriesPath;
     bool hasColor, running;
 
     // Game data
@@ -60,7 +59,7 @@ class Game {
 
    public:
     // Initialize the game
-    Game(bool tutorial, bool color);
+    Game(bool tutorial, bool color, const std::string& fn);
 
     // Deinitialize the game (stop ncurses)
     ~Game();

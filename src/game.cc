@@ -6,7 +6,7 @@
 #include "game.hh"
 #include "util.hh"
 
-cg::Game::Game(bool tutorial, bool color) {
+cg::Game::Game(bool tutorial, bool color, const std::string& fn) {
     // Init ncurses
     initscr();
     raw();
@@ -107,7 +107,7 @@ void cg::Game::playTutorial() {
 }
 
 void cg::Game::getCountries() {
-    std::ifstream is(COUNTRIES_PATH);
+    std::ifstream is(countriesPath);
     countries = csv::readCSV(is);
     is.close();
 }

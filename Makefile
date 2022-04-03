@@ -1,5 +1,5 @@
 WFLAGS := -Wall -Werror -Wextra -std=c++17
-IFLAGS := -Iinclude
+IFLAGS := -Iinclude -Ilib/argparse/include
 LFLAGS := -lncurses
 OFLAGS := -c ${WFLAGS} ${IFLAGS}
 CXXFLAGS := -o bin/cg ${LFLAGS}
