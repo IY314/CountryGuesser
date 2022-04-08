@@ -156,7 +156,8 @@ void cg::Game::display() {
         NUMBER,
         {
             mvaddstr(0, COLS - 8, std::to_string(guessed.size()).c_str());
-            addstr("/195");
+            addch('/');
+            addstr(std::to_string(required).c_str());
         },
         hasColor);
 
