@@ -3,7 +3,7 @@
 # Build scripts
 
 CXX := c++
-WARN := -Wall -Wextra
+WARN := -Wall -Werror -Wextra -Wno-unused-parameter
 STD := -std=c++17
 INCLUDE := -Iinclude -Ilib/argparse/include
 LIBS := -lncurses
