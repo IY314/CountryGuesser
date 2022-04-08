@@ -10,7 +10,8 @@
 #include "game.hh"
 #include "util.hh"
 
-cg::Game::Game(bool tutorial, bool color, const std::string& fn, int required) {
+cg::Game::Game(bool tutorial, bool color, const std::string& fn,
+               size_t required) {
     this->required = required;
 
     // Init ncurses
@@ -79,15 +80,12 @@ void cg::Game::lose(const std::string& text) {
     running = false;
 }
 
-void cg::Game::showDisplay(unsigned long start, unsigned long end,
-                           const std::string& text) {
+void cg::Game::showDisplay(size_t start, size_t end, const std::string& text) {
     clear();
     display();
     mvaddch(0, start, '|');
     mvaddch(1, start, '+');
-    for (unsigned long i = start + 1; i < end; ++i) {
-        mvaddch(1, i, '-');
-    }
+    for (size_t i = start + 1; i < end; ++i) mvaddch(1, i, '-');
     mvaddch(0, end, '|');
     mvaddch(1, end, '+');
     popup(text, false);
@@ -135,11 +133,7 @@ void cg::Game::display() {
     progPercent = ceil(progress * 100);
 
     util__addcolor(
-        BAR,
-        {
-            for (unsigned long i = 1; i <= progBarFilled; ++i)
-                mvaddch(0, i, '=');
-        },
+        BAR, for (size_t i = 1; i <= progBarFilled; ++i) mvaddch(0, i, '='),
         hasColor);
 
     // Percentage
@@ -167,15 +161,20 @@ void cg::Game::display() {
     util__addcolor(
         RECENT,
         {
-            if (guessed.size() >= 5)  // Display 5 most recent guesses
-                for (auto i = guessed.end() - 5; i != guessed.end(); ++i)
+            if (guessed.size() >= 5) {  // Display 5 most recent guesses
+                for (auto i = guessed.end() - 5; i != guessed.end(); ++i) {
                     mvaddstr(LINES / 4 + guessed.end() - i, 0,
                              countries.at(*i).at(0).c_str());
+                }
+            }
 
-            else  // Display ALL guesses
-                for (auto i = guessed.begin(); i != guessed.end(); ++i)
-                    mvaddstr(LINES / 4 + guessed.end() - i, 0,
-                             countries.at(*i).at(0).c_str());
+            else {  // Display ALL guesses
+                {
+                    for (auto i = guessed.begin(); i != guessed.end(); ++i)
+                        mvaddstr(LINES / 4 + guessed.end() - i, 0,
+                                 countries.at(*i).at(0).c_str());
+                }
+            }
         },
         hasColor);
 }

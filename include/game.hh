@@ -66,7 +66,7 @@ class Game {
 
    public:
     // Initialize the game
-    Game(bool tutorial, bool color, const std::string& fn, int required);
+    Game(bool tutorial, bool color, const std::string& fn, size_t required);
 
     // Deinitialize the game (stop ncurses)
     ~Game();
