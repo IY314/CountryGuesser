@@ -1,3 +1,7 @@
+// csv.hh
+// Author: Isaac Yee
+// CSV file parsing declaration
+
 #pragma once
 
 #include <fstream>

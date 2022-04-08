@@ -1,3 +1,7 @@
+// guess.cc
+// Author: Isaac Yee
+// Game logic implementation
+
 #include <regex>
 
 #include "game.hh"
@@ -83,10 +87,12 @@ void cg::Game::validateGuess() {
                     // There will only be one country with a distance of 0, so
                     // return early
                     if (std::find(guessed.begin(), guessed.end(), idx) !=
-                        guessed.end())
+                        guessed.end()) {
                         popup("That country has already been guessed!");
-                    else
+                    } else {
                         guessed.push_back(idx);
+                        if (guessed.size() == required) win();
+                    }
                     return;
                 }
             }
@@ -94,13 +100,15 @@ void cg::Game::validateGuess() {
 
     // 3 is the upper bound, meaning that if no countries were found that were
     // closer than 3 edits, the guess is not valid
-    if (lowestDistance == 3)
+    if (lowestDistance == 3) {
         lose("You Lose!");
-    else {
+    } else {
         // Use closest country
-        if (std::find(guessed.begin(), guessed.end(), idx) != guessed.end())
+        if (std::find(guessed.begin(), guessed.end(), idx) != guessed.end()) {
             popup("That country has already been guessed!");
-        else
+        } else {
             guessed.push_back(idx);
+            if (guessed.size() == required) win();
+        }
     }
 }

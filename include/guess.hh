@@ -1,3 +1,7 @@
+// guess.hh
+// Author: Isaac Yee
+// Game logic helpers declarations
+
 #pragma once
 
 #include "csv.hh"

@@ -1,3 +1,7 @@
+// util.cc
+// Author: Isaac Yee
+// Utility function implementation
+
 #include "util.hh"
 
 std::string util::trim(const std::string& str, const std::string& whitespace) {

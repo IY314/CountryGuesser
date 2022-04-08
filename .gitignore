@@ -1,4 +1,9 @@
+# .gitignore
+# Author: Isaac Yee
+# Ignored files declarartion
+
 .vscode
 *.swp
 bin
 .DS_Store
+obj

@@ -1,3 +1,7 @@
+// util.hh
+// Author: Isaac Yee
+// Utility function declarations
+
 #pragma once
 
 #include <string>

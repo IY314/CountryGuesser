@@ -1,24 +1,31 @@
-WFLAGS := -Wall -Werror -Wextra -std=c++17
-IFLAGS := -Iinclude -Ilib/argparse/include
-LFLAGS := -lncurses
-OFLAGS := -c ${WFLAGS} ${IFLAGS}
-CXXFLAGS := -o bin/cg ${LFLAGS}
+# Makefile
+# Author: Isaac Yee
+# Build scripts
 
-.PHONY: all link clean-o clean
+CXX := c++
+WARN := -Wall -Wextra
+STD := -std=c++17
+INCLUDE := -Iinclude -Ilib/argparse/include
+LIBS := -lncurses
 
-all: link
+TARGET := bin/cg
+OBJECTS := obj/main.o obj/csv.o obj/guess.o obj/game.o obj/util.o
 
-link: bin/main.o bin/csv.o bin/game.o bin/util.o bin/guess.o
-	${CXX} $^ ${CXXFLAGS}
+.PHONY: all clean
 
-bin/%.o: src/%.cc bin
-	${CXX} $< -o $@ ${OFLAGS}
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS) bin
+	$(CXX) $(WARN) $(STD) $(LIBS) $(OBJECTS) -o $(TARGET)
+
+obj/%.o: src/%.cc obj
+	$(CXX) $(WARN) $(STD) $(INCLUDE) -c $< -o $@
+
+obj:
+	@mkdir -p obj
 
 bin:
-	mkdir -p bin
+	@mkdir -p bin
 
-clean-o:
-	rm bin/*.o
-
-clean: clean-o
-	rm bin/cg
+clean:
+	@rm -rf $(TARGET) obj

@@ -1,3 +1,7 @@
+// game.cc
+// Author: Isaac Yee
+// Game I/O and init implementation
+
 #include <cmath>
 #include <sstream>
 
@@ -6,7 +10,9 @@
 #include "game.hh"
 #include "util.hh"
 
-cg::Game::Game(bool tutorial, bool color, const std::string& fn) {
+cg::Game::Game(bool tutorial, bool color, const std::string& fn, int required) {
+    this->required = required;
+
     // Init ncurses
     initscr();
     raw();
@@ -31,6 +37,9 @@ cg::Game::Game(bool tutorial, bool color, const std::string& fn) {
     progBarWidth = COLS - 15;
     mid = LINES / 2;
 
+    // Set filename
+    countriesPath = fn;
+
     if (tutorial) playTutorial();
 
     getCountries();
@@ -52,6 +61,13 @@ void cg::Game::popup(const std::string& text, bool cls) const {
         this->~Game();
         std::exit(0);
     }
+}
+
+void cg::Game::win() {
+    clear();
+    mvaddstr(mid, 0, "You Win!");
+    getch();
+    running = false;
 }
 
 void cg::Game::lose(const std::string& text) {

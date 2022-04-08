@@ -1,3 +1,7 @@
+// game.hh
+// Author: Isaac Yee
+// Game declarations
+
 #pragma once
 
 #include "guess.hh"
@@ -10,27 +14,30 @@
 
 namespace cg {
 class Game {
+    // Init variables
     std::string countriesPath;
     bool hasColor, running;
+    size_t required;
 
     // Game data
     std::vector<std::vector<std::string>> countries;
     std::vector<unsigned long> guessed;
 
     // Progress bar variables
-    unsigned long progBarWidth, progBarFilled, mid, cursor;
+    unsigned long progBarWidth, progBarFilled, mid;
     long double progress;
     unsigned short progPercent;
 
     // Per-guess variables
     std::string guess;
+    unsigned long cursor;
     int ch;
 
     // Show a "popup" to inform the player
     void popup(const std::string& text, bool cls = true) const;
 
     // Show a win screen
-    void win() const;
+    void win();
 
     // Show a lose screen
     void lose(const std::string& text);
@@ -59,7 +66,7 @@ class Game {
 
    public:
     // Initialize the game
-    Game(bool tutorial, bool color, const std::string& fn);
+    Game(bool tutorial, bool color, const std::string& fn, int required);
 
     // Deinitialize the game (stop ncurses)
     ~Game();
