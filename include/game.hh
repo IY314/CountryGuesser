@@ -4,24 +4,28 @@
 
 #pragma once
 
+#include <argparse/argparse.hpp>
+
 #include "guess.hh"
 
 // ncurses color constants
-#define BAR 0
-#define PERCENT 1
-#define NUMBER 2
-#define RECENT 3
+#define BAR 1
+#define PERCENT 2
+#define NUMBER 3
+#define RECENT 4
+#define TYPOS 5
 
 namespace cg {
 class Game {
     // Init variables
     std::string countriesPath;
     bool hasColor, running;
-    size_t required;
+    size_t required, maxTypos;
 
     // Game data
     std::vector<std::vector<std::string>> countries;
     std::vector<unsigned long> guessed;
+    size_t typos;
 
     // Progress bar variables
     unsigned long progBarWidth, progBarFilled, mid;
@@ -66,7 +70,7 @@ class Game {
 
    public:
     // Initialize the game
-    Game(bool tutorial, bool color, const std::string& fn, size_t required);
+    Game(const argparse::ArgumentParser& args);
 
     // Deinitialize the game (stop ncurses)
     ~Game();

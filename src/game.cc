@@ -11,12 +11,13 @@
 #include "game.hh"
 #include "util.hh"
 
-cg::Game::Game(bool tutorial, bool color, const std::string& fn,
-               size_t required) {
-    this->required = required;
+cg::Game::Game(const argparse::ArgumentParser& args) {
+    this->required = args.get<size_t>("--requirement");
+    this->maxTypos = args.get<size_t>("--typos");
+    typos = 0;
 
     // Set filename
-    countriesPath = fn;
+    countriesPath = args.get("--file");
 
     getCountries();
 
@@ -29,7 +30,7 @@ cg::Game::Game(bool tutorial, bool color, const std::string& fn,
     refresh();
 
     // Init color if specified
-    hasColor = color && has_colors();
+    hasColor = args.get<bool>("--nocolor") && has_colors();
     if (hasColor) {
         start_color();
         use_default_colors();
@@ -38,13 +39,14 @@ cg::Game::Game(bool tutorial, bool color, const std::string& fn,
         init_pair(PERCENT, COLOR_CYAN, -1);
         init_pair(NUMBER, COLOR_GREEN, -1);
         init_pair(RECENT, COLOR_RED, -1);
+        init_pair(TYPOS, COLOR_YELLOW, -1);
     }
 
     // Set display variables pertaining to dimension
     progBarWidth = COLS - 15;
     mid = LINES / 2;
 
-    if (tutorial) playTutorial();
+    if (args["--tutorial"] == true) playTutorial();
 }
 
 cg::Game::~Game() {
@@ -190,6 +192,15 @@ void cg::Game::display() {
             }
         },
         hasColor);
+
+    // Typos
+    util__addcolor(
+        TYPOS,
+        {
+            mvaddstr(LINES / 4, COLS - 10, "Typos: ");
+            addstr(std::to_string(typos).c_str());
+        },
+        hasColor);
 }
 
 void cg::Game::getInput() {
@@ -236,8 +247,12 @@ void cg::Game::getInput() {
 
             // Quit game
             case '\e':
-                typing = false;
-                running = false;
+                nodelay(stdscr, true);
+                if (getch() == ERR) {
+                    typing = false;
+                    running = false;
+                }
+                nodelay(stdscr, false);
                 break;
 
             // Move

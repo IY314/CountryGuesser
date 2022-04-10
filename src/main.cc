@@ -25,6 +25,10 @@ int main(int argc, char** argv) {
         .help("specify how many countries required to be guessed")
         .default_value<size_t>(195)
         .scan<'i', size_t>();
+    args.add_argument("--typos", "-y")
+        .help("specify how many typos are allowed")
+        .default_value<size_t>(10)
+        .scan<'i', size_t>();
 
     try {
         args.parse_args(argc, argv);
@@ -34,7 +38,5 @@ int main(int argc, char** argv) {
         std::exit(1);
     }
 
-    cg::Game(args.get<bool>("--tutorial"), args.get<bool>("--nocolor"),
-             args.get("--file"), args.get<size_t>("--requirement"))
-        .loop();
+    cg::Game(args).loop();
 }

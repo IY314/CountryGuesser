@@ -117,6 +117,7 @@ void cg::Game::validateGuess() {
     if (lowestDistance == 3) {
         lose("You Lose!");
     } else {
+        if (typos++ == maxTypos) lose("You ran out of typos!");
         // Use closest country
         if (std::find(guessed.begin(), guessed.end(), idx) != guessed.end()) {
             popup("That country has already been guessed!");
