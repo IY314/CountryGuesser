@@ -3,6 +3,7 @@
 // Game I/O and init implementation
 
 #include <cmath>
+#include <iostream>
 #include <sstream>
 
 #include <ncurses.h>
@@ -13,6 +14,11 @@
 cg::Game::Game(bool tutorial, bool color, const std::string& fn,
                size_t required) {
     this->required = required;
+
+    // Set filename
+    countriesPath = fn;
+
+    getCountries();
 
     // Init ncurses
     initscr();
@@ -38,12 +44,7 @@ cg::Game::Game(bool tutorial, bool color, const std::string& fn,
     progBarWidth = COLS - 15;
     mid = LINES / 2;
 
-    // Set filename
-    countriesPath = fn;
-
     if (tutorial) playTutorial();
-
-    getCountries();
 }
 
 cg::Game::~Game() {
@@ -108,7 +109,9 @@ void cg::Game::playTutorial() {
     popup(
         "or if you type in 'St. Patrick's Day' instead of 'Saint Patrick's "
         "Day.'");
-    popup("You only need to use ASCII letters; there will not be diacritics.");
+    popup(
+        "You only need to use ASCII letters; there will not be diacritics like "
+        "in café.");
     popup("However, I suppose I should show you around...");
 
     // Point to different parts of the display
@@ -122,8 +125,18 @@ void cg::Game::playTutorial() {
 
 void cg::Game::getCountries() {
     std::ifstream is(countriesPath);
+    if (is.fail()) {
+        std::cerr << "cg: Could not open file '" << countriesPath << "'\n";
+        std::exit(1);
+    }
     countries = csv::readCSV(is);
     is.close();
+    if (countries.size() < required) {
+        std::cerr << "cg: Not enough entries in the file '" << countriesPath
+                  << "' (" << required << " requested, " << countries.size()
+                  << " present)!\n";
+        std::exit(1);
+    }
 }
 
 void cg::Game::display() {
@@ -224,7 +237,7 @@ void cg::Game::getInput() {
             // Quit game
             case '\e':
                 typing = false;
-                lose("");
+                running = false;
                 break;
 
             // Move
