@@ -128,7 +128,7 @@ void cg::Game::getCountries() {
 
 void cg::Game::display() {
     // Progress bar
-    progress = guessed.size() / 195.0;
+    progress = (long double)guessed.size() / required;
     progBarFilled = ceil(progress * progBarWidth);
     progPercent = ceil(progress * 100);
 
@@ -237,7 +237,7 @@ void cg::Game::getInput() {
 
             // Add to input
             default:
-                guess.insert(cursor, std::string(1, ch));
+                guess.insert(cursor, 1, ch);
                 ++cursor;
                 break;
         }
